@@ -1,0 +1,9 @@
+[wokwi]
+version = 1
+
+# Ce fichier dit à Wokwi quel firmware flasher sur le ESP32 simulé.
+# PlatformIO compile le firmware dans .pio/build/esp32dev/firmware.bin
+# Wokwi le charge automatiquement quand tu cliques "Play".
+
+firmware = ".pio/build/esp32dev/firmware.bin"
+elf      = ".pio/build/esp32dev/firmware.elf"

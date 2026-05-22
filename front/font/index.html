@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Énergie</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f5f3;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e8e8e5;
+            padding: 28px;
+            width: 360px;
+        }
+
+        .label {
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            background: white;
+            border: 1px solid #d5d5d0;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.15s;
+        }
+
+        button:hover { background: #f5f5f3; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .result { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+
+        .empty {
+            font-size: 13px;
+            color: #aaa;
+            text-align: center;
+            padding: 24px 0;
+        }
+
+        .card {
+            background: #f8f8f6;
+            border: 1px solid #e8e8e5;
+            border-radius: 8px;
+            padding: 14px 18px;
+        }
+
+        .card-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #aaa;
+            margin-bottom: 4px;
+        }
+
+        .card-value {
+            font-size: 20px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .card-icon { margin-right: 6px; }
+
+        .error {
+            font-size: 13px;
+            color: #c0392b;
+            background: #fdf0ef;
+            border: 1px solid #f5c6c2;
+            border-radius: 8px;
+            padding: 14px 18px;
+        }
+
+        .skeleton {
+            background: #ececea;
+            border-radius: 4px;
+            animation: shimmer 1.2s ease infinite alternate;
+        }
+
+        @keyframes shimmer { from { opacity: 0.6; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <p class="label">Tableau de bord</p>
+        <h1>Gestion Énergie</h1>
+
+        <button onclick="getConsommation()" id="btn">
+            <span id="btn-text">Lire la consommation</span>
+        </button>
+
+        <div class="result" id="result">
+            <p class="empty">Aucune donnée disponible</p>
+        </div>
+    </div>
+
+    <script>
+        async function getConsommation() {
+            const resultDiv = document.getElementById("result");
+            const btn = document.getElementById("btn");
+            const btnText = document.getElementById("btn-text");
+
+            btn.disabled = true;
+            btnText.textContent = "Chargement...";
+
+            resultDiv.innerHTML = `
+                <div class="card"><div class="skeleton" style="height:11px;width:40%;margin-bottom:8px"></div><div class="skeleton" style="height:20px;width:55%"></div></div>
+                <div class="card"><div class="skeleton" style="height:11px;width:45%;margin-bottom:8px"></div><div class="skeleton" style="height:20px;width:50%"></div></div>
+            `;
+
+            try {
+                const [r1, r2] = await Promise.all([
+                    fetch("http://localhost:3000/api/consommation?type=eau"),
+                    fetch("http://localhost:3000/api/consommation?type=electricite")
+                ]);
+                const eau = await r1.text();
+                const elec = await r2.text();
+
+                resultDiv.innerHTML = `
+                    <div class="card">
+                        <p class="card-label"><span class="card-icon">💧</span>Consommation eau</p>
+                        <p class="card-value">${eau}</p>
+                    </div>
+                    <div class="card">
+                        <p class="card-label"><span class="card-icon">⚡</span>Consommation électricité</p>
+                        <p class="card-value">${elec}</p>
+                    </div>
+                `;
+            } catch(e) {
+                resultDiv.innerHTML = `<p class="error">⚠ Connexion impossible au serveur</p>`;
+            }
+
+            btn.disabled = false;
+            btnText.textContent = "Actualiser";
+        }
+    </script>
+
+</body>
+</html>
